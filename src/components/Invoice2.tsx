@@ -1,12 +1,15 @@
 import React, { useState, useRef,useEffect } from 'react';
 import { AgGridReact } from 'ag-grid-react';
+import Papa from 'papaparse';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
-
+import { EmailComposer } from 'capacitor-email-composer'
 import { Firestore, collection, getDocs, query, where } from "@firebase/firestore";
 import { firestore } from "./db";
 import { IonButton, IonItem, IonInput } from '@ionic/react';
 import handleSubmit from './addData';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+
 
 interface ContainerProps { };
 
@@ -69,6 +72,53 @@ const Invoice2: React.FC<ContainerProps> = (props) => {
   const [toName, setToName] = useState('');
   const [toAdress, setToAdress] = useState('');
   const [fileName, setFileName] = useState('');
+
+  const downloadFile = () => {
+
+    const data = rowData;
+
+    console.log(data);
+
+    const csv = Papa.unparse(data);
+    console.log(csv);
+    const blob = new Blob([csv], { type: 'text/csv' });
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'data.csv';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  
+
+  }
+
+  const emailFile = () => {
+
+    const filepath = 'data.csv'
+
+    const csv = Papa.unparse(rowData);
+    console.log(csv);
+
+    const writeSecretFile = async () => {
+      await Filesystem.writeFile({
+        path: filepath,
+        data: csv,
+        directory: Directory.Documents,
+        encoding: Encoding.UTF8,
+      });
+    };
+
+    EmailComposer.open(({
+      attachments: [{
+        type: 'base64',
+        path: Directory.Documents,
+        name: filepath
+      }]
+    }))
+
+  }
 
   // @ts-ignore
   if (props.saved) {
@@ -171,6 +221,8 @@ const Invoice2: React.FC<ContainerProps> = (props) => {
 
       <IonItem>
       <IonButton onClick={saveData} >Save File</IonButton> <br />
+      <IonButton onClick={downloadFile} >Download File</IonButton> <br />
+      <IonButton onClick={emailFile} >Email File</IonButton> <br />
       <IonButton href='/files' >List Files</IonButton> <br />
       </IonItem>
 
