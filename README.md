@@ -10,6 +10,9 @@ REQUIREMENTS :
 3) Android Studio
 
 Steps :
+
+Create a file named FirebaseKey.ts inside src/components directory and add your firebase api key as  : export const FIREBASE_API_KEY = YOUR_API_KEY
+
 ```
 git clone https://github.com/KrishRathor/SIHINTERNALHACKATHON.git
 cd SIHINTERNALHACKATHON
