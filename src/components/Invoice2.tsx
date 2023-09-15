@@ -94,31 +94,43 @@ const Invoice2: React.FC<ContainerProps> = (props) => {
 
   }
 
-  const emailFile = () => {
+  const emailFile = async () => {
 
     const filepath = 'data.csv'
 
     const csv = Papa.unparse(rowData);
     console.log(csv);
 
-    const writeSecretFile = async () => {
-      await Filesystem.writeFile({
-        path: filepath,
-        data: csv,
-        directory: Directory.Documents,
-        encoding: Encoding.UTF8,
-      });
-    };
+    await Filesystem.writeFile({
+      path: filepath,
+      data: csv,
+      directory: Directory.Documents,
+      encoding: Encoding.UTF8,
+    });
 
-    EmailComposer.open(({
-      attachments: [{
-        type: 'base64',
-        path: Directory.Documents,
-        name: filepath
-      }]
+    await EmailComposer.open(({
+      body: 'Sending CSV file'
     }))
 
   }
+
+  const [total, setTotal] = useState();
+
+  useEffect(() => {
+
+    const data = rowData;
+    let sum = 0;
+
+    for (let i = 0; i < data.length; i++) {
+      const element = data[i];
+      sum += element.price;
+    }
+
+    // @ts-ignore
+    setTotal(sum);
+
+  }, [rowData])
+
 
   // @ts-ignore
   if (props.saved) {
@@ -164,7 +176,7 @@ const Invoice2: React.FC<ContainerProps> = (props) => {
       <>
 
       <IonItem>
-      <IonButton onClick={saveData} >Save File</IonButton> <br />
+      <IonButton onClick={saveData} >Save File.</IonButton> <br />
       <IonButton href='/files' >List Files</IonButton> <br />
       </IonItem>
 
@@ -265,6 +277,9 @@ const Invoice2: React.FC<ContainerProps> = (props) => {
           onCellValueChanged={handleCellValueChanged}
           >
         </AgGridReact>
+
+        <h3 style={{background: 'black', color: 'white'}} >Total: {total} </h3>
+
       </div>
     </>
   );
